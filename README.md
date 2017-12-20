@@ -1,2 +1,4 @@
 # My-Repository
-My general repository
+My public repository
+
+Welcome to the public repository of Elias Waranoi
