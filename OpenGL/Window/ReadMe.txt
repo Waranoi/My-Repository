@@ -5,3 +5,5 @@ Language: C/C++
 Specification: OpenGL
 API: Version 2.1
 Profile: Compatability
+
+I've removed several libraries and utilities that were originally in the MinGW folder to make it smaller.
