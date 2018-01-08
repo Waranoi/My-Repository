@@ -13,7 +13,7 @@ namespace Window
 		printf("Error: %s\n", description);
 	}
 	
-	GLFWwindow* Create_window(int width, int height, char const *title)
+	inline GLFWwindow* Create_window(int width, int height, char const *title)
 	{
 		//Initialize GLFW
 		if (!glfwInit())
@@ -46,7 +46,7 @@ namespace Window
 		return window;
 	}
 	
-	void Destroy_window(GLFWwindow *window)
+	inline void Destroy_window(GLFWwindow *window)
 	{
 		glfwDestroyWindow(window);
 		glfwTerminate();
