@@ -1,13 +1,4 @@
-#include "..\Window\Window.h"
-#include <stdio.h>
-#include <math.h>
-
-GLFWwindow *window;
-GLuint program;
-GLuint vs_int;
-GLuint fs_int;
-GLuint triangle;
-GLuint triangle_ebo;
+#include "Triangle_app.h"
 
 const GLchar* vs =
 "#version 430\n"
@@ -35,7 +26,52 @@ const char* fs =
 "	out_color = abs(norm);\n"
 "}\n";
 
-void Shader_error_log(const char* msg, GLuint shader)
+Triangle_app::Triangle_app()
+{
+	move[0] = 0;
+	move[1] = 0;
+	position[0] = 0;
+	position[1] = 0;
+}
+
+Triangle_app::~Triangle_app()
+{
+	Window::Destroy_window(window);
+}
+
+void Triangle_app::Key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	Triangle_app* app = (Triangle_app*)glfwGetWindowUserPointer(window);
+	switch (key)
+	{
+		case GLFW_KEY_RIGHT:
+			if (action == GLFW_PRESS)
+				app->move[0] += 0.01f;
+			else if (action == GLFW_RELEASE)
+				app->move[0] -= 0.01f;
+			break;
+		case GLFW_KEY_LEFT:
+			if (action == GLFW_PRESS)
+				app->move[0] -= 0.01f;
+			else if (action == GLFW_RELEASE)
+				app->move[0] += 0.01f;
+			break;
+		case GLFW_KEY_UP:
+			if (action == GLFW_PRESS)
+				app->move[1] += 0.01f;
+			else if (action == GLFW_RELEASE)
+				app->move[1] -= 0.01f;
+			break;
+		case GLFW_KEY_DOWN:
+			if (action == GLFW_PRESS)
+				app->move[1] -= 0.01f;
+			else if (action == GLFW_RELEASE)
+				app->move[1] += 0.01f;
+			break;
+	}
+}
+
+void Triangle_app::Shader_error_log(const char* msg, GLuint shader)
 {
 	GLint log_length;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &log_length);
@@ -48,7 +84,7 @@ void Shader_error_log(const char* msg, GLuint shader)
 	}
 }
 
-void Program_error_log(const char* msg, GLuint program)
+void Triangle_app::Program_error_log(const char* msg, GLuint program)
 {
 	GLint log_length;
 	glGetProgramiv(program, GL_INFO_LOG_LENGTH, &log_length);
@@ -61,7 +97,7 @@ void Program_error_log(const char* msg, GLuint program)
 	}
 }
 
-void Set_matrix_rot(float radians, float (&matrix)[16])
+void Triangle_app::Set_matrix_rot(float radians, float (&matrix)[16])
 {
 	float mCos = cosf(radians);
 	float mSin = sinf(radians);
@@ -72,7 +108,7 @@ void Set_matrix_rot(float radians, float (&matrix)[16])
 	matrix[10] = mCos;
 }
 
-bool Setup()
+bool Triangle_app::Setup()
 {
 	//Initialize GLFW and create a window
 	window = Window::Create_window(640, 640, "Triangle_app");
@@ -82,6 +118,10 @@ bool Setup()
 		scanf("%*s");
 		return false;
 	}
+	
+	//Set this as window user pointer so that the Key_callback can access the class Triangle_app's member variables.
+	glfwSetWindowUserPointer(window, this);
+	glfwSetKeyCallback(window, Key_callback);
 	
 	//Setup vertex shader
 	vs_int = glCreateShader(GL_VERTEX_SHADER);
@@ -129,16 +169,13 @@ bool Setup()
 	return true;
 }
 
-void Application_loop()
+void Triangle_app::Application_loop()
 {
 	glUseProgram(program);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, nullptr);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (GLvoid*)(sizeof(float) * 3));
-	
-	float move_vec[] = { 0, 0, -1 };
-	glUniform3fv(glGetUniformLocation(program, "move"), 1, move_vec);
 	
 	float rot = 0;
 	float rot_matrix[] = 
@@ -154,6 +191,12 @@ void Application_loop()
 	{
         glClear(GL_COLOR_BUFFER_BIT);
 		
+		//Set position of triangle
+		position[0] += move[0];
+		position[1] += move[1];
+		float move_vec[] = { position[0], position[1], -1 };
+		glUniform3fv(glGetUniformLocation(program, "move"), 1, move_vec);
+		
 		//Rotate then draw triangle
 		rot += 0.01f;
 		Set_matrix_rot(rot, rot_matrix);
@@ -163,12 +206,4 @@ void Application_loop()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-}
-
-int main()
-{
-	if (Setup() == true)
-		Application_loop();
-	Window::Destroy_window(window);
-	return 0;
 }

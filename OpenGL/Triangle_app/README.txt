@@ -1,0 +1,1 @@
+Simple example project that draws a triangle. Move it with the arrow keys.
